@@ -1,3 +1,5 @@
+This is a slightly modified version of LuaJIT 2.03 to be used as a drop-in replacement for the Lua library of Settlers 5.
+
 README for LuaJIT 2.0.3
 -----------------------
 
@@ -13,4 +15,3 @@ Documentation for LuaJIT is available in HTML format.
 Please point your favorite browser to:
 
  doc/luajit.html
-
