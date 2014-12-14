@@ -33,10 +33,17 @@
 /*
 ** pseudo-indices
 */
+/*
 #define LUA_REGISTRYINDEX	(-10000)
 #define LUA_ENVIRONINDEX	(-10001)
 #define LUA_GLOBALSINDEX	(-10002)
 #define lua_upvalueindex(i)	(LUA_GLOBALSINDEX-(i))
+*/
+
+#define LUA_REGISTRYINDEX	(-10000)
+#define LUA_GLOBALSINDEX	(-10001)
+#define LUA_ENVIRONINDEX	(-10002)
+#define lua_upvalueindex(i)	(LUA_ENVIRONINDEX-(i))
 
 
 /* thread status; 0 is OK */
@@ -253,7 +260,7 @@ LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
 
 #define lua_pop(L,n)		lua_settop(L, -(n)-1)
 
-#define lua_newtable(L)		lua_createtable(L, 0, 0)
+//#define lua_newtable(L)		lua_createtable(L, 0, 0)
 
 #define lua_register(L,n,f) (lua_pushcfunction(L, (f)), lua_setglobal(L, (n)))
 
@@ -276,19 +283,29 @@ LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
 #define lua_setglobal(L,s)	lua_setfield(L, LUA_GLOBALSINDEX, (s))
 #define lua_getglobal(L,s)	lua_getfield(L, LUA_GLOBALSINDEX, (s))
 
-#define lua_tostring(L,i)	lua_tolstring(L, (i), NULL)
+//#define lua_tostring(L,i)	lua_tolstring(L, (i), NULL)
 
+
+
+/* yoq bb compat! */
+LUA_API int     (lua_dostring) (lua_State *L, const char *s);
+LUA_API void     *(lua_bb_getuserstate) (lua_State *L);
+LUA_API void     (lua_newtable) (lua_State *L);
+LUA_API lua_State *(lua_open) ();
+LUA_API int     (lua_getgccount) (lua_State *L);
+LUA_API int     (lua_getgcthreshold) (lua_State *L);
+LUA_API const char *(lua_tostring) (lua_State *L, int idx);
 
 
 /*
 ** compatibility macros and functions
 */
 
-#define lua_open()	luaL_newstate()
+//#define lua_open()	luaL_newstate()
 
 #define lua_getregistry(L)	lua_pushvalue(L, LUA_REGISTRYINDEX)
 
-#define lua_getgccount(L)	lua_gc(L, LUA_GCCOUNT, 0)
+//#define lua_getgccount(L)	lua_gc(L, LUA_GCCOUNT, 0)
 
 #define lua_Chunkreader		lua_Reader
 #define lua_Chunkwriter		lua_Writer

@@ -25,6 +25,9 @@
 #include "lj_vm.h"
 #include "lj_strscan.h"
 
+#include "lauxlib.h"
+#include "lualib.h"
+
 /* -- Common helper functions --------------------------------------------- */
 
 #define api_checknelems(L, n)		api_check(L, (n) <= (L->top - L->base))
@@ -1198,3 +1201,41 @@ LUA_API void lua_setallocf(lua_State *L, lua_Alloc f, void *ud)
   g->allocf = f;
 }
 
+/* yoq bb compat! */
+
+LUA_API int lua_dostring (lua_State *L, const char *s)
+{
+	return luaL_dostring(L, s);
+}
+
+LUA_API void *lua_bb_getuserstate (lua_State *L)
+{
+	return (void *)(&L->bbUserState);
+}
+
+LUA_API void lua_newtable (lua_State *L)
+{
+	lua_createtable(L, 0, 0);
+}
+
+LUA_API lua_State *lua_open()
+{
+	lua_State *L = luaL_newstate();
+	luaL_openlibs(L);
+	return L;
+}
+
+LUA_API int lua_getgccount (lua_State *L)
+{
+	return lua_gc(L, LUA_GCCOUNT, 0);
+}
+
+LUA_API int lua_getgcthreshold (lua_State *L)
+{
+	return 100; //dummy
+}
+
+LUA_API const char *(lua_tostring) (lua_State *L, int idx)
+{
+	return lua_tolstring(L, idx, NULL);
+}
