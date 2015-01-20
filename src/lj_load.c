@@ -45,12 +45,35 @@ static TValue *cpparser(lua_State *L, lua_CFunction dummy, void *ud)
   return NULL;
 }
 
+uint8_t dummyReaderSendEOF = 0;
+lua_Reader currentReader;
+
+const char *s5LuaReaderDummy(lua_State *L, void *ud, size_t *sz)
+{
+	const char *buf;
+	
+	if(dummyReaderSendEOF) {
+		dummyReaderSendEOF = 0;
+		return 0;
+	}
+	
+	buf = currentReader(L, ud, sz);
+	
+	if(buf &&  *sz == 1 && *buf == 0)
+		dummyReaderSendEOF = 1;
+
+	return buf;
+}
+
 LUA_API int lua_loadx(lua_State *L, lua_Reader reader, void *data,
 		      const char *chunkname, const char *mode)
 {
   LexState ls;
   int status;
-  ls.rfunc = reader;
+
+  currentReader = reader;
+  ls.rfunc = s5LuaReaderDummy;
+
   ls.rdata = data;
   ls.chunkarg = chunkname ? chunkname : "?";
   ls.mode = mode;
@@ -156,13 +179,37 @@ LUALIB_API int luaL_loadstring(lua_State *L, const char *s)
 
 /* -- Dump bytecode ------------------------------------------------------- */
 
+lua_Writer currentWriter;
+
+int s5LuaWriterDummy(lua_State *L, const void* p, size_t sz, void* ud)
+{
+	size_t writeBlockSz;
+
+	do
+	{
+		writeBlockSz = (sz > 8000) ? 8000 : sz;
+		if(!currentWriter(L, p, writeBlockSz, ud))
+			return 1;
+
+		p = (void *)((int)p + writeBlockSz);
+		sz -= writeBlockSz;
+	}
+	while(sz > 0);
+
+	return 0;
+}
+
 LUA_API int lua_dump(lua_State *L, lua_Writer writer, void *data)
 {
   cTValue *o = L->top-1;
   api_check(L, L->top > L->base);
   if (tvisfunc(o) && isluafunc(funcV(o)))
-    return lj_bcwrite(L, funcproto(funcV(o)), writer, data, 0);
-  else
+  {
+	currentWriter = writer;
+	lj_bcwrite(L, funcproto(funcV(o)), s5LuaWriterDummy, data, 0);
     return 1;
+  }
+  else
+    return 0;
 }
 
